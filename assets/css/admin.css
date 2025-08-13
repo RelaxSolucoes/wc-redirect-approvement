@@ -1,0 +1,62 @@
+.wcsppr-settings .form-table th {
+	width: 240px;
+}
+
+.wcsppr-settings .regular-text {
+	max-width: 520px;
+}
+
+/* Visual inspirado no plugin exemplo */
+.wpwevo-panel h1 {
+	font-weight: 700;
+	letter-spacing: 0.2px;
+}
+.wpwevo-cta-box {
+	display:flex;
+	justify-content:space-between;
+	align-items:center;
+	background: #fff;
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	padding: 16px 18px;
+	box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+	margin: 16px 0 10px;
+}
+.wpwevo-cta-content { max-width: 70%; }
+.wpwevo-cta-title { margin: 0 0 6px; font-size: 16px; }
+.wpwevo-cta-description { margin: 0; color: #374151; }
+.wpwevo-cta-button {
+	background: linear-gradient(135deg,#667eea 0%, #764ba2 100%);
+	color:#fff; text-decoration:none; padding:10px 16px; border-radius:8px;
+}
+
+/* Cartão de configurações */
+.wcsppr-card-outer {
+	background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+	border-radius: 12px;
+	padding: 0;
+	box-shadow: 0 4px 15px rgba(168,237,234,0.2);
+	overflow: hidden;
+	margin-top:20px;
+}
+.wcsppr-card-inner {
+	background: rgba(255,255,255,0.95);
+	margin: 2px;
+	border-radius: 10px;
+	padding: 20px;
+}
+.wcsppr-field {
+	background:#f7fafc;
+	padding:15px;
+	border-radius:8px;
+	border-left:4px solid #667eea;
+}
+.wcsppr-field label { display:block; margin-bottom:8px; font-weight:500; color:#2d3748; }
+.wcsppr-field input[type="text"],
+.wcsppr-field input[type="url"],
+.wcsppr-field input[type="number"] {
+	width:100%; padding:10px; border:2px solid #e2e8f0; border-radius:6px; font-size:14px;
+}
+.wcsppr-actions { margin-top:20px; display:flex; gap:10px; align-items:center; }
+
+
