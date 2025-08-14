@@ -9,17 +9,53 @@ class WCSPPR_Page_Factory {
 	 * Garantir que exista uma página de "Pagamento aprovado" com visual pré-formatado.
 	 * Retorna a URL (permalink) criada.
 	 */
-    public static function ensure_sample_page( string $desired_slug = '' ): string {
-        $postarr = array(
-            'post_title'   => __( 'Pagamento aprovado', 'wcsppr' ),
-            'post_status'  => 'publish',
-            'post_type'    => 'page',
-            'post_content' => self::build_sample_content(),
-        );
-        if ( ! empty( $desired_slug ) ) {
-            $postarr['post_name'] = sanitize_title( $desired_slug );
-        }
-        $page_id = wp_insert_post( $postarr );
+	public static function ensure_sample_page(): string {
+		$page_id = wp_insert_post( array(
+			'post_title'   => __( 'Pagamento aprovado', 'wcsppr' ),
+			'post_status'  => 'publish',
+			'post_type'    => 'page',
+			'post_content' => self::build_sample_content(),
+		) );
+		if ( is_wp_error( $page_id ) || empty( $page_id ) ) {
+			return '';
+		}
+		$permalink = get_permalink( $page_id );
+		return $permalink ? (string) $permalink : '';
+	}
+
+	/**
+	 * Garante a criação de uma página usando o slug derivado da URL informada.
+	 * Ex.: "/obrigado" ou "https://site.com/obrigado" → cria página com slug "obrigado".
+	 * Retorna o permalink criado ou string vazia em falha.
+	 */
+	public static function ensure_page_for_url( string $url_or_path ): string {
+		$raw = trim( $url_or_path );
+		if ( $raw === '' ) {
+			return '';
+		}
+		// Normaliza para URL absoluta
+		if ( '/' === substr( $raw, 0, 1 ) || ! preg_match( '#^https?://#i', $raw ) ) {
+			$raw = home_url( '/' . ltrim( $raw, '/' ) );
+		}
+		$absolute = esc_url_raw( $raw );
+		$path = parse_url( $absolute, PHP_URL_PATH );
+		$path = is_string( $path ) ? trim( $path, '/' ) : '';
+		if ( $path === '' ) {
+			return '';
+		}
+		$segments = array_values( array_filter( explode( '/', $path ) ) );
+		$slug = end( $segments );
+		if ( ! is_string( $slug ) || $slug === '' ) {
+			return '';
+		}
+		$title = ucwords( str_replace( array( '-', '_' ), ' ', $slug ) );
+		$page_id = wp_insert_post( array(
+			'post_title'   => $title,
+			'post_name'    => sanitize_title( $slug ),
+			'post_status'  => 'publish',
+			'post_type'    => 'page',
+			'post_content' => self::build_sample_content(),
+		) );
 		if ( is_wp_error( $page_id ) || empty( $page_id ) ) {
 			return '';
 		}
