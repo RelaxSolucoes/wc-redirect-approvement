@@ -108,13 +108,15 @@ class WCSPPR_Admin_Settings {
 	}
 
 	public function sanitize_redirect_url( $value ) {
-		$value = esc_url_raw( trim( (string) $value ) );
+		$raw_value = trim( (string) $value );
+		$value = esc_url_raw( $raw_value );
 		// Se a URL for válida e existir, mantém
 		if ( ! empty( $value ) && filter_var( $value, FILTER_VALIDATE_URL ) && $this->url_exists( $value ) ) {
 			return $value;
 		}
-		// Caso contrário, cria a página exemplo
-		$created = class_exists( 'WCSPPR_Page_Factory' ) ? WCSPPR_Page_Factory::ensure_sample_page() : '';
+		// Caso contrário, cria a página exemplo tentando usar o slug informado (ex: "/obrigado")
+		$desired_slug = $this->extract_desired_slug( $raw_value );
+		$created = class_exists( 'WCSPPR_Page_Factory' ) ? WCSPPR_Page_Factory::ensure_sample_page( $desired_slug ) : '';
 		if ( $created ) {
 			add_settings_error( 'wc_redirect_settings_group', 'wcsppr_url_created', __( 'A URL informada não existia. Criamos uma página de exemplo e definimos como destino.', 'wcsppr' ), 'updated' );
 			return esc_url_raw( $created );
@@ -127,9 +129,11 @@ class WCSPPR_Admin_Settings {
 		wp_enqueue_style( 'wcsppr-admin', WCSPPR_URL . 'assets/css/admin.css', array(), WCSPPR_VERSION );
 		// Se uma URL for enviada mas não existir, cria a página exemplo
 		if ( isset( $_POST['wc_redirect_url'] ) ) {
-			$url = esc_url_raw( wp_unslash( $_POST['wc_redirect_url'] ) );
-			if ( $url && ! $this->url_exists( $url ) ) {
-				$created = class_exists( 'WCSPPR_Page_Factory' ) ? WCSPPR_Page_Factory::ensure_sample_page() : '';
+			$posted_raw = wp_unslash( $_POST['wc_redirect_url'] );
+			$url = esc_url_raw( $posted_raw );
+			if ( $posted_raw && ( empty( $url ) || ! $this->url_exists( $url ) ) ) {
+				$desired_slug = $this->extract_desired_slug( (string) $posted_raw );
+				$created = class_exists( 'WCSPPR_Page_Factory' ) ? WCSPPR_Page_Factory::ensure_sample_page( $desired_slug ) : '';
 				if ( $created ) {
 					update_option( 'wc_redirect_url', esc_url_raw( $created ) );
 					add_settings_error( 'wc_redirect_settings_group', 'wcsppr_url_created', __( 'A URL informada não existia. Criamos uma página de exemplo e definimos como destino.', 'wcsppr' ), 'updated' );
@@ -188,6 +192,28 @@ class WCSPPR_Admin_Settings {
 		}
 		$code = (int) wp_remote_retrieve_response_code( $response );
 		return $code >= 200 && $code < 400;
+	}
+
+	private function extract_desired_slug( string $value ): string {
+		$value = trim( $value );
+		$path = '';
+		if ( filter_var( $value, FILTER_VALIDATE_URL ) ) {
+			$parts = wp_parse_url( $value );
+			if ( isset( $parts['path'] ) ) {
+				$path = (string) $parts['path'];
+			}
+		} else {
+			$path = $value;
+		}
+		$segments = array_values( array_filter( explode( '/', $path ), function( $seg ) {
+			return $seg !== '';
+		} ) );
+		$last = end( $segments );
+		$slug = $last ? sanitize_title( $last ) : '';
+		if ( empty( $slug ) ) {
+			$slug = 'obrigado';
+		}
+		return $slug;
 	}
 }
 
