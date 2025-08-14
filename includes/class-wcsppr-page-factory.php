@@ -9,13 +9,17 @@ class WCSPPR_Page_Factory {
 	 * Garantir que exista uma página de "Pagamento aprovado" com visual pré-formatado.
 	 * Retorna a URL (permalink) criada.
 	 */
-	public static function ensure_sample_page(): string {
-		$page_id = wp_insert_post( array(
-			'post_title'   => __( 'Pagamento aprovado', 'wcsppr' ),
-			'post_status'  => 'publish',
-			'post_type'    => 'page',
-			'post_content' => self::build_sample_content(),
-		) );
+    public static function ensure_sample_page( string $desired_slug = '' ): string {
+        $postarr = array(
+            'post_title'   => __( 'Pagamento aprovado', 'wcsppr' ),
+            'post_status'  => 'publish',
+            'post_type'    => 'page',
+            'post_content' => self::build_sample_content(),
+        );
+        if ( ! empty( $desired_slug ) ) {
+            $postarr['post_name'] = sanitize_title( $desired_slug );
+        }
+        $page_id = wp_insert_post( $postarr );
 		if ( is_wp_error( $page_id ) || empty( $page_id ) ) {
 			return '';
 		}
